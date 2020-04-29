@@ -291,6 +291,16 @@ class CallManager:NSObject  {
         
     }
     public func switchToSpeakerAudio() {
+//        let sharedSession = AVAudioSession.sharedInstance()
+//           do {
+//            try sharedSession.setCategory(AVAudioSession.Category.playAndRecord)
+//            try sharedSession.setMode(AVAudioSession.Mode.voiceChat)
+//               try sharedSession.setPreferredIOBufferDuration(TimeInterval(0.005))
+//               try sharedSession.setPreferredSampleRate(44100.0)
+//           } catch {
+//               debugPrint("Failed to configure `AVAudioSession`")
+//           }
+//
         
         let sharedSession = AVAudioSession.sharedInstance()
         do {
@@ -305,7 +315,7 @@ class CallManager:NSObject  {
             print("-------------------------------------------")
             print("SPEAKER")
             print("-------------------------------------------")
-            
+
         } catch let error as NSError {
             print("audioSession error: \(error.localizedDescription)")
         }
@@ -653,6 +663,7 @@ extension CallManager :SocketDelegate{
         self.incomingCallUserId = data.connectedUserId ?? 0
         self.callIdGlobal = data.callId ?? ""
         RTCAudioSession.sharedInstance().useManualAudio = true
+        RTCAudioSession.sharedInstance().isAudioEnabled = true
         self.isVideoEnabled = data.isVideo ?? false
         self.connectedUserName = data.name!
         self.connectedUserPhoto = data.photoUrl!
@@ -678,11 +689,12 @@ extension CallManager :SocketDelegate{
         WebRTCClient.sharedInstance.connect { (RTCSessionDescription) in
             self.sendSDP(sessionDescription: RTCSessionDescription, conUID: data.connectedUserId!, callId: "")
         }
-        if (isHeadphonesConnected()) {
-            switchToEarPieceAudio()
-        } else {
-            switchToSpeakerAudio()
-        }
+        switchToSpeakerAudio()
+//        if (isHeadphonesConnected()) {
+//            switchToEarPieceAudio()
+//        } else {
+//            switchToSpeakerAudio()
+//        }
         playCallTone()
     }
     
@@ -790,14 +802,14 @@ extension CallManager :WebRTCClientDelegate{
             }
             if (isHeadphonesConnected()) {
                 if self.isVideoEnabled {
-                    switchToEarPieceAudio()
+//                    switchToEarPieceAudio()
                     switchToSpeakerAudio()
                 } else {
                     switchToSpeakerAudio()
-                    switchToEarPieceAudio()
+//                    switchToEarPieceAudio()
                 }
             } else {
-                switchToEarPieceAudio()
+//                switchToEarPieceAudio()
                 switchToSpeakerAudio()
             }
         case .count:

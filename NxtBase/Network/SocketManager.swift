@@ -82,6 +82,7 @@ class SocketIOManager: NSObject {
         socket.on(clientEvent: .error) {data, ack in
             print("error on socket")
         }
+        
         socket.on(clientEvent: .reconnect) {data, ack in
             print("socket reconnected")
         }
@@ -100,47 +101,15 @@ class SocketIOManager: NSObject {
             let message = ChatsData(fromDictionary: dictionary)
             self.delegate?.didReceiveNewMessage(data: message)
         }
+        
         socket.onAny {_ in
             
-        }
-        
-        socket.on("answer") {[weak self] data, ack in
-            let dictionary : [String : Any] = data.first as! [String : Any]
-            let offerDic = dictionary["offer"] as! [String:Any]
-            print(offerDic)
-            let sdp = SDP.init(sdp: offerDic["sdp"] as! String)
-            print(sdp)
-            
-            
-            do {
-                let signalingMessage = try SignalingMessage.init(type: dictionary["type"] as! String, offer: sdp, candidate: dictionary["candidate"] as? Candidate, phone: dictionary["phone"] as? String, photoUrl: dictionary["photoUrl"] as? String, name: dictionary["name"] as? String, connectedUserId: dictionary["connectedUserId"] as? Int, isVideo: dictionary["isVideo"] as? Bool,callId: "")
-                try self?.delegate?.didReceiveAnswer(data: signalingMessage)
-                
-            }
-            catch{
-                print("crash")
-            }
-            
-        }
-        
-        socket.on("candidate") {[weak self] data, ack in
-            let dictionary : [String : Any] = data.first as! [String : Any]
-            let candidate = dictionary["candidate"]  as! [String:Any]
-            let candidate1 = Candidate.init(sdp: candidate["sdp"] as! String, sdpMLineIndex: candidate["sdpMLineIndex"] as! Int32, sdpMid: candidate["sdpMid"] as! String)
-            
-            let signalingMessage = SignalingMessage.init(type: dictionary["type"] as! String, offer: nil, candidate: candidate1, phone: dictionary["phone"] as? String, photoUrl: dictionary["photoUrl"] as? String, name: dictionary["name"] as? String, connectedUserId: dictionary["connectedUserId"] as? Int, isVideo: dictionary["isVideo"] as? Bool, callId: "")
-            self?.delegate?.didReceiveCandidate(data: signalingMessage)
-        }
-        
-        socket.on("reject") {[weak self] data, ack in
-            let dictionary : [String : Any] = data.first as! [String : Any]
-            self?.delegate?.didReceiveReject(data: dictionary)
         }
         
         socket.on("newcall") {[weak self] data, ack in
             let dictionary : [String : Any] = data.first as! [String : Any]
             let signalingMessage = Available.init(type: dictionary["type"] as! String, connectedUserId: dictionary["connectedUserId"] as? Int, isAvailable: dictionary["isAvailable"] as? Bool, reason: dictionary["reason"] as? String, name: dictionary["name"] as? String)
-            if(WebRTCClient.sharedInstance.isConnected){
+            if(WebRTCClient.sharedInstance.isConnected) {
                 var dic = [String:Any]()
                 dic["type"] = "reject"
                 dic["connectedUserId"] = signalingMessage.connectedUserId
@@ -167,13 +136,43 @@ class SocketIOManager: NSObject {
                 #if targetEnvironment(simulator)
                 // we're on the simulator - calculate pretend movement
                 #else
-        /////// ATCallManager.shared.incommingCall(from: signalingMessage.name!, delay: 0) ///////////////////////////////////
+                /////// ATCallManager.shared.incommingCall(from: signalingMessage.name!, delay: 0) ///////////////////////////////////
                 #endif
             }
             CallManager.sharedInstance.isCallHandled = false
             CallManager.sharedInstance.isIncomingCall = true
             CallManager.sharedInstance.startWebrtc()
             CallManager.sharedInstance.didReceiveOffer(data: signalingMessage)
+        }
+        
+        socket.on("answer") {[weak self] data, ack in
+            let dictionary : [String : Any] = data.first as! [String : Any]
+            let offerDic = dictionary["offer"] as! [String:Any]
+            print(offerDic)
+            let sdp = SDP.init(sdp: offerDic["sdp"] as! String)
+            print(sdp)
+            do {
+                let signalingMessage = try SignalingMessage.init(type: dictionary["type"] as! String, offer: sdp, candidate: dictionary["candidate"] as? Candidate, phone: dictionary["phone"] as? String, photoUrl: dictionary["photoUrl"] as? String, name: dictionary["name"] as? String, connectedUserId: dictionary["connectedUserId"] as? Int, isVideo: dictionary["isVideo"] as? Bool,callId: "")
+                try self?.delegate?.didReceiveAnswer(data: signalingMessage)
+                
+            }
+            catch{
+                print("crash")
+            }
+        }
+        
+        socket.on("candidate") {[weak self] data, ack in
+            let dictionary : [String : Any] = data.first as! [String : Any]
+            let candidate = dictionary["candidate"]  as! [String:Any]
+            let candidate1 = Candidate.init(sdp: candidate["sdp"] as! String, sdpMLineIndex: candidate["sdpMLineIndex"] as! Int32, sdpMid: candidate["sdpMid"] as! String)
+            
+            let signalingMessage = SignalingMessage.init(type: dictionary["type"] as! String, offer: nil, candidate: candidate1, phone: dictionary["phone"] as? String, photoUrl: dictionary["photoUrl"] as? String, name: dictionary["name"] as? String, connectedUserId: dictionary["connectedUserId"] as? Int, isVideo: dictionary["isVideo"] as? Bool, callId: "")
+            self?.delegate?.didReceiveCandidate(data: signalingMessage)
+        }
+        
+        socket.on("reject") {[weak self] data, ack in
+            let dictionary : [String : Any] = data.first as! [String : Any]
+            self?.delegate?.didReceiveReject(data: dictionary)
         }
     }
     
@@ -206,6 +205,7 @@ class SocketIOManager: NSObject {
     func sendCandidates(dictionary:[String:Any]) {
         self.socket.emit(dictionary["type"] as! String, with: [SharedManager.shared.returnJsonObject(dictionary: dictionary)])
     }
+    
     func sendReadyForCall(dictionary:[String:Any]) {
         self.socket.emit(dictionary["type"] as! String, with: [SharedManager.shared.returnJsonObject(dictionary: dictionary)])
     }

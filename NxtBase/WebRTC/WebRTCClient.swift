@@ -23,6 +23,7 @@ class WebRTCClient: NSObject, RTCPeerConnectionDelegate, RTCVideoViewDelegate, R
     
     
     static let sharedInstance = WebRTCClient()
+    
     private var peerConnectionFactory: RTCPeerConnectionFactory!
     public var peerConnection: RTCPeerConnection?
     private var videoCapturer: RTCVideoCapturer!
@@ -104,6 +105,7 @@ class WebRTCClient: NSObject, RTCPeerConnectionDelegate, RTCVideoViewDelegate, R
             self.dataChannel = self.setupDataChannel()
             self.dataChannel?.delegate = self
         }
+        
         makeOffer(onSuccess: onSuccess)
     }
     
@@ -133,35 +135,68 @@ class WebRTCClient: NSObject, RTCPeerConnectionDelegate, RTCVideoViewDelegate, R
     }
 
         // MARK: Signaling Event
-    func receiveOffer(offerSDP: RTCSessionDescription){
-        if(self.peerConnection == nil){
-            print("offer received, create peerconnection")
-            self.peerConnection = setupPeerConnection()
-            self.peerConnection!.delegate = self
-            if self.channels.video {
-                self.peerConnection!.add(localVideoTrack, streamIds: ["stream-0"])
-            }
-            if self.channels.audio {
-                self.peerConnection!.add(localAudioTrack, streamIds: ["stream-0"])
-            }
-            if self.channels.datachannel {
-                self.dataChannel = self.setupDataChannel()
-                self.dataChannel?.delegate = self
-            }
-            
-        }
-        
-        print("set remote description")
-        self.peerConnection!.setRemoteDescription(offerSDP) { (err) in
-            if let error = err {
-                print("failed to set remote offer SDP")
-                print(error)
-                return
+        func receiveOffer(offerSDP: RTCSessionDescription){
+            if(self.peerConnection == nil){
+                print("offer received, create peerconnection")
+                self.peerConnection = setupPeerConnection()
+                self.peerConnection!.delegate = self
+                if self.channels.video {
+                    self.peerConnection!.add(localVideoTrack, streamIds: ["stream-0"])
+                }
+                if self.channels.audio {
+                    self.peerConnection!.add(localAudioTrack, streamIds: ["stream-0"])
+                }
+                if self.channels.datachannel {
+                    self.dataChannel = self.setupDataChannel()
+                    self.dataChannel?.delegate = self
+                }
+                
             }
             
-            print("succeed to set remote offer SDP")
+            print("set remote description")
+            self.peerConnection!.setRemoteDescription(offerSDP) { (err) in
+                if let error = err {
+                    print("failed to set remote offer SDP")
+                    print(error)
+                    return
+                }
+                
+                print("succeed to set remote offer SDP")
+    //            self.makeAnswer(onCreateAnswer: onCreateAnswer)
+            }
         }
-    }
+//
+//    // MARK: Signaling Event
+//    func receiveOffer(offerSDP: RTCSessionDescription, onCreateAnswer: @escaping (RTCSessionDescription) -> Void){
+//        if(self.peerConnection == nil){
+//            print("offer received, create peerconnection")
+//            self.peerConnection = setupPeerConnection()
+//            self.peerConnection!.delegate = self
+//            if self.channels.video {
+//                self.peerConnection!.add(localVideoTrack, streamIds: ["stream-0"])
+//            }
+//            if self.channels.audio {
+//                self.peerConnection!.add(localAudioTrack, streamIds: ["stream-0"])
+//            }
+//            if self.channels.datachannel {
+//                self.dataChannel = self.setupDataChannel()
+//                self.dataChannel?.delegate = self
+//            }
+//
+//        }
+//
+//        print("set remote description")
+//        self.peerConnection!.setRemoteDescription(offerSDP) { (err) in
+//            if let error = err {
+//                print("failed to set remote offer SDP")
+//                print(error)
+//                return
+//            }
+//
+//            print("succeed to set remote offer SDP")
+////            self.makeAnswer(onCreateAnswer: onCreateAnswer)
+//        }
+//    }
     
     func receiveAnswer(answerSDP: RTCSessionDescription){
         self.peerConnection!.setRemoteDescription(answerSDP) { (err) in
@@ -217,13 +252,116 @@ class WebRTCClient: NSObject, RTCPeerConnectionDelegate, RTCVideoViewDelegate, R
     // MARK: - Setup
     private func setupPeerConnection(reconnect:Bool = false) -> RTCPeerConnection {
         let rtcConf = RTCConfiguration()
+        
+        
+        
+        
+        /*
+        //fetch servers
+        if let decoded = UserDefaults.standard.data(forKey: Constants.userdefaultskeys.twilio_servers),
+            let twilio = try? JSONDecoder().decode(IceServersData.self, from: decoded) {
+            if twilio.iceServers.count != 0 {
+                for iceServer in twilio.iceServers{
+                    
+                    if((iceServer.username != nil) && (iceServer.credential != nil)){
+                        rtcConf.iceServers.append(RTCIceServer(urlStrings: [iceServer.url], username: iceServer.username, credential: iceServer.credential))
+                    }else
+                    {
+                        rtcConf.iceServers.append(RTCIceServer(urlStrings: [iceServer.url]))
+                    }
+                }
+            }else{
+                rtcConf.iceServers = [RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"]),RTCIceServer(urlStrings: ["turn:numb.viagenie.ca"], username: "webrtc@live.com", credential: "muazkh")]
+            }
+        }else{
+            rtcConf.iceServers = [RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"]),RTCIceServer(urlStrings: ["turn:numb.viagenie.ca"], username: "webrtc@live.com", credential: "muazkh")]
+            
+        }*/
+        
         rtcConf.iceServers = [
+            
             RTCIceServer(urlStrings: ["stun:stun.worldnoordev.com:3478?transport=udp"]),
             RTCIceServer(urlStrings: ["turn:turn.worldnoordev.com:3478?transport=udp"],username: "softech", credential: "Kalaam2020"),
             RTCIceServer(urlStrings: ["turn:turn.worldnoordev.com:3478?transport=tcp"],username: "softech", credential: "Kalaam2020"),
             RTCIceServer(urlStrings: ["turn:turn.worldnoordev.com:443?transport=tcp"],username: "softech", credential: "Kalaam2020"),
+
         ]
+
+        
+//        print("rtcConf.iceServers")
+//        print("-------------------------------------------------------")
+//        print(rtcConf.iceServers)
+
+
+        //        rtcConf.iceServers = [RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])]
+        //                rtcConf.iceServers = [RTCIceServer(urlStrings: ["stun:54.67.20.238:3478"])]
+        //        rtcConf.iceServers = [RTCIceServer(urlStrings: ["turn:numb.viagenie.ca"], username: "ehsan.ullah.tarar@gmail.com", credential: "12345678"),RTCIceServer(urlStrings: ["turn:54.67.20.238:3478"], username: "softech", credential: "Kalaam2020"),RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])]
+
+//        rtcConf.iceServers = [RTCIceServer(urlStrings: ["turn:numb.viagenie.ca"], username: "webrtc@live.com", credential: "muazkh")]
+
+//        rtcConf.iceServers = [RTCIceServer(urlStrings: ["turn:54.67.20.238:3478"], username: "softech", credential: "Kalaam2020")]
+//
+
+//        rtcConf.iceServers = [
+//
+//            RTCIceServer(urlStrings: ["stun:global.stun.twilio.com:3478?transport=udp"]),
+//            RTCIceServer(urlStrings: ["stun:global.stun.twilio.com:3478?transport=tcp"]),
+//            RTCIceServer(urlStrings: ["turn:global.turn.twilio.com:3478?transport=tcp"], username: "be9c91cecccc8bf4c62f051d4b2a2431a8dd378f536a0a5f8b676aef38549eae", credential: "5YoPgtoENuHrL7Q4f+SQs3E3pvndywHPsLYq1UYVzPk="),
+//            RTCIceServer(urlStrings: ["turn:global.turn.twilio.com:3478?transport=udp"], username: "be9c91cecccc8bf4c62f051d4b2a2431a8dd378f536a0a5f8b676aef38549eae", credential: "5YoPgtoENuHrL7Q4f+SQs3E3pvndywHPsLYq1UYVzPk="),
+//            RTCIceServer(urlStrings: ["turn:global.turn.twilio.com:443?transport=tcp"], username: "be9c91cecccc8bf4c62f051d4b2a2431a8dd378f536a0a5f8b676aef38549eae", credential: "5YoPgtoENuHrL7Q4f+SQs3E3pvndywHPsLYq1UYVzPk=")
+//
+//        ]
+
+        
+
+        
+//        rtcConf.iceServers = [
+//            RTCIceServer(urlStrings: ["stun:global.stun.twilio.com:3478?transport=udp"],
+//                                      RTCIceServer(urlStrings: ["turn:global.turn.twilio.com:3478?transport=udp"], username: "82a800ce5dadb28b08a40ad3ab4841cf495e9b08404b8347d268e0c74f197250", credential: "iNVTHqAjtr3X/TNXsOOerZ4kta9yCKoTZnFbj8kQ+30="),
+//                                      RTCIceServer(urlStrings: ["turn:global.turn.twilio.com:3478?transport=tcp"], username: "82a800ce5dadb28b08a40ad3ab4841cf495e9b08404b8347d268e0c74f197250", credential: "iNVTHqAjtr3X/TNXsOOerZ4kta9yCKoTZnFbj8kQ+30="),
+//                                      RTCIceServer(urlStrings: ["turn:global.turn.twilio.com:443?transport=tcp"], username: "82a800ce5dadb28b08a40ad3ab4841cf495e9b08404b8347d268e0c74f197250", credential: "iNVTHqAjtr3X/TNXsOOerZ4kta9yCKoTZnFbj8kQ+30=")
+//        ]
+
+        
+        
+
+        
+        /*
+        
+        [
+            { url: 'stun:global.stun.twilio.com:3478?transport=udp',
+                urls: 'stun:global.stun.twilio.com:3478?transport=udp' },
+            {
+                url: 'turn:global.turn.twilio.com:3478?transport=udp',
+                username:'82a800ce5dadb28b08a40ad3ab4841cf495e9b08404b8347d268e0c74f197250',
+                urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+                credential: 'iNVTHqAjtr3X/TNXsOOerZ4kta9yCKoTZnFbj8kQ+30=' },
+            {
+                url: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                username:'82a800ce5dadb28b08a40ad3ab4841cf495e9b08404b8347d268e0c74f197250',
+                urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                credential: 'iNVTHqAjtr3X/TNXsOOerZ4kta9yCKoTZnFbj8kQ+30=' },
+            { url: 'turn:global.turn.twilio.com:443?transport=tcp',
+                username: '82a800ce5dadb28b08a40ad3ab4841cf495e9b08404b8347d268e0c74f197250',
+                urls: 'turn:global.turn.twilio.com:443?transport=tcp',
+                credential: 'iNVTHqAjtr3X/TNXsOOerZ4kta9yCKoTZnFbj8kQ+30='
+            }
+        ]
+        
+        */
+        
+        
+//        if(reconnect){
+////            kRTCMediaConstraintsIceRestart
+//            let mediaConstraints = RTCMediaConstraints.init(mandatoryConstraints: [kRTCMediaConstraintsIceRestart:"true"], optionalConstraints: nil)
+//            let pc = self.peerConnectionFactory.peerConnection(with: rtcConf, constraints: mediaConstraints, delegate: nil)
+//            return pc
+//
+//
+//        }
         let mediaConstraints = RTCMediaConstraints.init(mandatoryConstraints: [kRTCMediaConstraintsIceRestart:"true"], optionalConstraints: nil)
+
+//        let mediaConstraints = RTCMediaConstraints.init(mandatoryConstraints: nil, optionalConstraints: nil)
         let pc = self.peerConnectionFactory.peerConnection(with: rtcConf, constraints: mediaConstraints, delegate: nil)
         return pc
     }
@@ -386,19 +524,25 @@ class WebRTCClient: NSObject, RTCPeerConnectionDelegate, RTCVideoViewDelegate, R
             self.delegate?.didConnectWebRTC()
         }
     }
-    
     func closePeerConnection(){
+
         if self.peerConnection != nil {
             self.peerConnection!.close()
             self.peerConnection = nil
         }
         self.remoteRenderView?.isHidden = true
         self.dataChannel = nil
+
     }
     private func onDisConnected(){
         self.isConnected = false
+        
         DispatchQueue.main.async {
             print("--- on dis connected ---")
+//            self.peerConnection!.close()
+//            self.peerConnection = nil
+//            self.remoteRenderView?.isHidden = true
+//            self.dataChannel = nil
             self.delegate?.didDisconnectWebRTC()
         }
     }
@@ -408,13 +552,14 @@ class WebRTCClient: NSObject, RTCPeerConnectionDelegate, RTCVideoViewDelegate, R
 extension WebRTCClient {
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
         var state = ""
-        if stateChanged == .stable {
+        if stateChanged == .stable{
             state = "stable"
         }
         
-        if stateChanged == .closed {
+        if stateChanged == .closed{
             state = "closed"
         }
+        
         print("signaling state changed: ", state)
     }
     
@@ -476,7 +621,7 @@ extension WebRTCClient{
         let isLandScape = size.width < size.height
         var renderView: RTCEAGLVideoView?
         var parentView: UIView?
-        if videoView.isEqual(localRenderView) {
+        if videoView.isEqual(localRenderView){
             print("local video size changed")
             renderView = localRenderView
             parentView = localView

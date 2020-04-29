@@ -15,17 +15,17 @@ import CallKit
 //import SwiftySound
 //import Reachability
 
-class CallManager: NSObject {
+class CallManager:NSObject  {
     
     static let sharedInstance = CallManager()
-    
+
     //MARK: - Properties
     
-    //    let reachability = try! Reachability()
+//    let reachability = try! Reachability()
     var iceArray:[RTCIceCandidate]? = []
-    var callscreen:CallSetupController
-    //    var socket: WebSocket!
-    //    var tryToConnectWebSocket: Timer!
+    var callscreen:CallViewController
+//    var socket: WebSocket!
+//    var tryToConnectWebSocket: Timer!
     var cameraSession: CameraSession?
     
     // You can create video source from CMSampleBuffer :)
@@ -33,60 +33,67 @@ class CallManager: NSObject {
     var cameraFilter: CameraFilter?
     
     // Constants
-    //    let wsStatusMessageBase = "WebSocket: "
-    //    let webRTCStatusMesasgeBase = "WebRTC: "
-    //    let likeStr: String = "Like"
+//    let wsStatusMessageBase = "WebSocket: "
+//    let webRTCStatusMesasgeBase = "WebRTC: "
+//    let likeStr: String = "Like"
     
     var counter = 0
     var timer = Timer()
     var callcounter = 0
     var calltimer = Timer()
-    
+
     var isIncomingCall = false
     var isCallHandled = false
     var isCallConnected = false
-    
+
     var callIdGlobal = ""
     var connectedUserId:Int = 0
     var incomingCallUserId:Int = 0
     var connectedUserName = ""
     var connectedUserPhoto = ""
     var connectedUserPhone = ""
-    
+
     var showHelpingLabel = false
-    
+
     var isSpeakerEnabled = false
     var isAudioMute = false
     var isFrontCamera = false
     var headphonesConnected = false
     
     var isVideoEnabled = false
-    //    let audioSession = AVAudioSession.sharedInstance()
+//    let audioSession = AVAudioSession.sharedInstance()
     var audioPlayer: AVAudioPlayer?
     let storyboard = UIStoryboard(name: "Main", bundle: nil)
     // MARK: - callmanager init methods
-    
+
     override init() {
-        callscreen = storyboard.instantiateViewController(withIdentifier: CallSetupController.className) as! CallSetupController
+        callscreen = storyboard.instantiateViewController(withIdentifier: CallViewController.className) as! CallViewController
         callscreen.modalPresentationStyle = .overFullScreen
     }
+    deinit {
+//        reachability.stopNotifier()
+    }
+
     func minimiserCall()  {
+        
         print("minimiserCall")
         CallMinimiser.sharedInstance.showCallBar(name: connectedUserName )
         callscreen.dismiss(animated: true) {}
-        
+    
     }
     func maximiseCall()  {
         print("maximiseCall")
         CallMinimiser.sharedInstance.hideCallBar()
         if callscreen == nil {
-            callscreen = storyboard.instantiateViewController(withIdentifier: CallSetupController.className) as! CallSetupController
+            callscreen = storyboard.instantiateViewController(withIdentifier: CallViewController.className) as! CallViewController
             callscreen.modalPresentationStyle = .overFullScreen
         }
-        UIApplication.shared.keyWindow?.rootViewController?.presentVC(callscreen)
+//        if let tabController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController {
+//            tabController.presentVC(callscreen)
+//        }
         callscreen.setupCallAgain()
     }
-    
+
     func playCallTone(){
         print("playCallTone")
         do {
@@ -97,6 +104,7 @@ class CallManager: NSObject {
             } else {
                 print("Error: No file with specified name exists")
             }
+            
             do {
                 if let fileURL = Bundle.main.path(forResource: "dial_tone", ofType: "mp3") {
                     self.audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: fileURL))
@@ -110,59 +118,64 @@ class CallManager: NSObject {
             } catch let error {
                 print("Can't play the audio file failed with an error \(error.localizedDescription)")
             }
+            
+            
             self.audioPlayer?.play()
         }
+        
     }
-    
     func stopAudioPlayer(){
+        print("stopAudioPlayer")
+
         if audioPlayer != nil {
             if audioPlayer!.isPlaying {
                 audioPlayer?.stop()
                 audioPlayer = nil
             }
         }
+        
     }
     
     
     func switchAudiotoVideo(){
         /*
-         if (isVideoEnabled) {
-         isVideoEnabled = false
-         
-         }else{
-         isVideoEnabled = true
-         addVideoViews()
-         }
-         */
+        if (isVideoEnabled) {
+            isVideoEnabled = false
+            
+        }else{
+            isVideoEnabled = true
+            addVideoViews()
+        }
+        */
     }
     func switchCameraOrientation(){
         if (isVideoEnabled) {
             if isFrontCamera {
                 isFrontCamera = false
-                
+
             }else
             {
                 isFrontCamera = true
             }
             self.cameraSession?.swapCamera()
-            
+
         }
-        
+
     }
-    
+
     func toggleMute(){
         if(isAudioMute == false){
             isAudioMute = true
             WebRTCClient.sharedInstance.localAudioTrack.isEnabled = isAudioMute
-            //            callscreen.btnMute.setImage(UIImage(named: "callmute"), for: .normal)
+            callscreen.mutecallbtn.setImage(UIImage(named: "callmute"), for: .normal)
             
         }else{
             isAudioMute = false
             WebRTCClient.sharedInstance.localAudioTrack.isEnabled = isAudioMute
-            //            callscreen.btnMute.setImage(UIImage(named: "callunmute"), for: .normal)
+            callscreen.mutecallbtn.setImage(UIImage(named: "callunmute"), for: .normal)
             
         }
-        
+
     }
     func toggleSpeaker(){
         if (isSpeakerEnabled){
@@ -170,9 +183,9 @@ class CallManager: NSObject {
         }else{
             switchToSpeakerAudio()
         }
-        
+
     }
-    
+
     //MARK: - helper functions
     
     func setupAudioRouteNotifications() {
@@ -183,9 +196,9 @@ class CallManager: NSObject {
                        name: AVAudioSession.routeChangeNotification,
                        object: nil)
     }
-    
+
     @objc func handleRouteChange(notification: Notification) {
-        
+
         print("============================================================================")
         print(notification.userInfo as Any)
         guard let userInfo = notification.userInfo,
@@ -193,20 +206,20 @@ class CallManager: NSObject {
             let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {
                 return
         }
-        
+
         // Switch over the route change reason.
         switch reason {
-            
+
         case .newDeviceAvailable: // New device found.
             let session = AVAudioSession.sharedInstance()
             headphonesConnected = hasHeadphones(in: session.currentRoute)
-            
+
         case .oldDeviceUnavailable: // Old device removed.
             if let previousRoute =
                 userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
                 headphonesConnected = hasHeadphones(in: previousRoute)
             }
-            
+
         default: ()
         }
         
@@ -218,23 +231,20 @@ class CallManager: NSObject {
         return !routeDescription.outputs.filter({$0.portType == .headphones}).isEmpty
     }
     func bluetoothAudioConnected() -> Bool{
-        let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
-        for output in outputs{
-            if output.portType == AVAudioSession.Port.bluetoothA2DP || output.portType == AVAudioSession.Port.bluetoothHFP || output.portType == AVAudioSession.Port.bluetoothLE{
-                return true
-            }
+      let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
+      for output in outputs{
+        if output.portType == AVAudioSession.Port.bluetoothA2DP || output.portType == AVAudioSession.Port.bluetoothHFP || output.portType == AVAudioSession.Port.bluetoothLE{
+          return true
         }
-        return false
+      }
+      return false
     }
     // called every time interval from the timer
     @objc func timerAction() {
         counter += 1
-        print("Timer aaacccttioonnnn \(counter)")
-        callscreen.lblTimer.text = "\(seconds2Timestamp(intSeconds: counter))"
-        //        callscreen.lblTimer.text = "\(seconds2Timestamp(intSeconds: counter))"
-        //        CallMinimiser.sharedInstance.updateTimerLabeltext(time: callscreen.lblTimer.text ?? "00:00")
+        callscreen.calltimerlabel.text = "\(seconds2Timestamp(intSeconds: counter))"
+        CallMinimiser.sharedInstance.updateTimerLabeltext(time: callscreen.calltimerlabel.text ?? "00:00")
     }
-    
     func seconds2Timestamp(intSeconds:Int)->String {
         let mins:Int = intSeconds/60
         let hours:Int = mins/60
@@ -243,7 +253,7 @@ class CallManager: NSObject {
         let strTimestamp:String = ((hours<10) ? "0" : "") + String(hours) + ":" + ((mins<10) ? "0" : "") + String(mins) + ":" + ((secs<10) ? "0" : "") + String(secs)
         return strTimestamp
     }
-    
+
     func isHeadphonesConnected() -> Bool{
         //        let routes = AVAudioSession.sharedInstance().currentRoute
         //        return routes.outputs.contains(where: { (port) -> Bool in
@@ -271,7 +281,7 @@ class CallManager: NSObject {
             try sharedSession.overrideOutputAudioPort(AVAudioSession.PortOverride.none)
             try sharedSession.setActive(true)
             isSpeakerEnabled = false
-            //            callscreen.btnSpeaker.setImage(UIImage(named: "callspeaker-on"), for: .normal)
+            callscreen.speakerBtn.setImage(UIImage(named: "callspeaker-on"), for: .normal)
             print("-------------------------------------------")
             print("EAR PIECE")
             print("-------------------------------------------")
@@ -291,7 +301,7 @@ class CallManager: NSObject {
             try sharedSession.overrideOutputAudioPort(AVAudioSession.PortOverride.speaker)
             try sharedSession.setActive(true)
             isSpeakerEnabled = true
-            //            callscreen.btnSpeaker.setImage(UIImage(named: "callspeaker-off"), for: .normal)
+            callscreen.speakerBtn.setImage(UIImage(named: "callspeaker-off"), for: .normal)
             print("-------------------------------------------")
             print("SPEAKER")
             print("-------------------------------------------")
@@ -304,7 +314,7 @@ class CallManager: NSObject {
     func initiateCallLogic(){
         if !WebRTCClient.sharedInstance.isConnected {
             self.sendNewCallEvent()
-            //            callscreen.calltimerlabel.text = "Calling"
+            callscreen.calltimerlabel.text = "Calling"
             //            callcounter = 0
             //            calltimer.invalidate() // just in case this button is tapped multiple times
             //            calltimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(calltimerAction), userInfo: nil, repeats: true)
@@ -318,14 +328,14 @@ class CallManager: NSObject {
             var dic = [String:String]()
             dic["type"] = "reject"
             dic["callId"] = self.callIdGlobal
-            //            if WebRTCClient.sharedInstance.isConnected {
-            //                dic["connectedUserId"] = self.connectedUserId.description
-            //                print("REJECT SENT to connected user")
-            //
-            //            }else{
-            dic["connectedUserId"] = self.incomingCallUserId.description
-            print("REJECT SENT to incoming user")
-            //            }
+//            if WebRTCClient.sharedInstance.isConnected {
+//                dic["connectedUserId"] = self.connectedUserId.description
+//                print("REJECT SENT to connected user")
+//
+//            }else{
+                dic["connectedUserId"] = self.incomingCallUserId.description
+                print("REJECT SENT to incoming user")
+//            }
             print("\(dic)")
             SocketIOManager.sharedInstance.sendReject(dictionary: dic)
         }
@@ -333,16 +343,11 @@ class CallManager: NSObject {
         #if targetEnvironment(simulator)
         // we're on the simulator - calculate pretend movement
         #else
-        //            ATCallManager.shared.provider?.invalidate()//////////////////////////
+        ATCallManager.shared.provider?.invalidate()
         #endif
-        callscreen.dismiss(animated: true) {
+        if  UIApplication.shared.topMostViewController() is CallViewController {
+            callscreen.dismissVC(completion: nil)
         }
-        
-        let topVC = UIApplication.shared.topMostViewController()
-        if topVC is CallSetupController {
-            
-        }
-        
         
         CallMinimiser.sharedInstance.hideCallBar()
         stopWebrtc()
@@ -374,28 +379,30 @@ class CallManager: NSObject {
         timer.invalidate()
         calltimer.invalidate()
         audioPlayer = nil
+        NotificationCenter.default.post(name: NSNotification.Name("update"), object: nil, userInfo: nil)
     }
     
-    //    @objc func calltimerAction() {
-    //        print("calltimerAction")
-    //        callcounter += 1
-    //        if callcounter == 20 {
-    //            print("calltimerAction ENDED")
-    //            calltimer.invalidate()
-    //            callscreen.calltimerlabel.text = "No answer"
-    //            callscreen.cancelBtn.isHidden = false
-    //            callscreen.callagainBtn.isHidden = false
-    //            callscreen.endcallbtn.isHidden = true
-    //            callscreen.acceptcallbtn.isHidden = true
-    //            callscreen.endcallbtn.sendActions(for: .touchUpInside)
-    //        }
-    //    }
+//    @objc func calltimerAction() {
+//        print("calltimerAction")
+//        callcounter += 1
+//        if callcounter == 20 {
+//            print("calltimerAction ENDED")
+//            calltimer.invalidate()
+//            callscreen.calltimerlabel.text = "No answer"
+//            callscreen.cancelBtn.isHidden = false
+//            callscreen.callagainBtn.isHidden = false
+//            callscreen.endcallbtn.isHidden = true
+//            callscreen.acceptcallbtn.isHidden = true
+//            callscreen.endcallbtn.sendActions(for: .touchUpInside)
+//        }
+//    }
     
     func sendNewCallEvent(){
         
         if(SocketIOManager.sharedInstance.manager?.status == .connected){
-            var dic = [String:String]()
+            var dic = [String:Any]()
             dic["type"] = "newcall"
+            dic["isVideo"] = true
             dic["connectedUserId"] = self.incomingCallUserId.description
             SocketIOManager.sharedInstance.sendNewCall(dictionary: dic)
         }
@@ -407,14 +414,14 @@ class CallManager: NSObject {
         WebRTCClient.sharedInstance.makeAnswer(onCreateAnswer: {(answerSDP: RTCSessionDescription) -> Void in
             self.sendSDP(sessionDescription: answerSDP, conUID: self.connectedUserId,callId: self.callIdGlobal)
         })
-        //        callscreen.btnAccept.isHidden = true
-        //        callscreen.endcallbtn.center.x = callscreen.view.center.x
+        callscreen.acceptcallbtn.isHidden = true
+//        callscreen.endcallbtn.center.x = callscreen.view.center.x
     }
     
     
     //MARK: - view methods
     
-    func startWebrtc() {
+     func startWebrtc() {
         #if targetEnvironment(simulator)
         // simulator does not have camera
         self.useCustomCapturer = false
@@ -430,26 +437,29 @@ class CallManager: NSObject {
             self.cameraSession?.setupSession()
             self.cameraFilter = CameraFilter()
         }
-        
         setupAudioRouteNotifications()
-        
-        
     }
-    func showCallScreen(){
-        let vc = storyboard.instantiateViewController(withIdentifier: CallSetupController.className) as! CallSetupController
-        UIApplication.shared.keyWindow?.rootViewController?.presentVC(vc)
+    
+    func showCallScreen() {
+//        if let tabController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController {
+//            tabController.presentVC(callscreen)
+//        }
+        
+         callscreen = storyboard.instantiateViewController(withIdentifier: CallViewController.className) as! CallViewController
+               callscreen.modalPresentationStyle = .overFullScreen
+        UIApplication.shared.keyWindow?.rootViewController?.presentVC(callscreen)
+        
         callscreen.setupUI()
     }
     
     func stopWebrtc() {
-        
         callscreen.remoteVideoViewContainter.removeFromSuperview()
         callscreen.localVideoView.removeFromSuperview()
-        
+
         if WebRTCClient.sharedInstance.isConnected {
             WebRTCClient.sharedInstance.disconnect()
         }
-        //        Sound.stopAll()
+//        Sound.stopAll()
         self.stopAudioPlayer()
         resetManager()
         
@@ -466,7 +476,7 @@ class CallManager: NSObject {
         }
         
         let sdp = SDP.init(sdp: sessionDescription.sdp)
-        let signalingMessage = SignalingMessage.init(type: type, offer: sdp, candidate: nil,phone: "",photoUrl:"",name: "",connectedUserId: conUID,isVideo: isVideoEnabled,callId: "")
+        let signalingMessage = SignalingMessage.init(type: type, offer: sdp, candidate: nil,phone: "",photoUrl:"",name: "",connectedUserId: conUID,isVideo: isVideoEnabled,callId: callId)
         do {
             let data = try JSONEncoder().encode(signalingMessage)
             let message = String(data: data, encoding: String.Encoding.utf8)!
@@ -494,6 +504,10 @@ class CallManager: NSObject {
 // MARK: - Socket IO Delegate
 
 extension CallManager :SocketDelegate{
+    func didReceiveNewMessage(data: ChatsData) {
+        
+    }
+    
     func didReceiveActiveStatus(data: [Any]) {
         
     }
@@ -506,7 +520,7 @@ extension CallManager :SocketDelegate{
         
     }
     
-    func didReceiveNewMessage(data: ChatsData) {
+    func didReceiveFriendRequestAck(data: Any) {
         
     }
     
@@ -531,34 +545,30 @@ extension CallManager :SocketDelegate{
         print("-- websocket did connect --")
         
         if(isCallConnected == true){
-            //            WebRTCClient.sharedInstance.connectWitoutOffer()
+//            WebRTCClient.sharedInstance.connectWitoutOffer()
             for candidate in self.iceArray!{
                 self.sendCandidate(iceCandidate: candidate, conUID: self.connectedUserId)
             }
+
             
+//            WebRTCClient.sharedInstance.connect(reconnect: true ,onSuccess: { (offerSDP: RTCSessionDescription) -> Void in
+//                self.sendSDP(sessionDescription: offerSDP, conUID: (self.connectedUserId),callId: self.callIdGlobal)
+//            })
             
-            //            WebRTCClient.sharedInstance.connect(reconnect: true ,onSuccess: { (offerSDP: RTCSessionDescription) -> Void in
-            //                self.sendSDP(sessionDescription: offerSDP, conUID: (self.connectedUserId),callId: self.callIdGlobal)
-            //            })
-            
-            
+
             
         }
     }
     
     func didSocketDisConnected(data: [Any]) {
         print("-- websocket did disconnect --")
-        //        if(showHelpingLabel){
-        //            wsStatusLabel.text = wsStatusMessageBase + "disconnected"
-        //            wsStatusLabel.textColor = .red
-        //        }
-        
+//        if(showHelpingLabel){
+//            wsStatusLabel.text = wsStatusMessageBase + "disconnected"
+//            wsStatusLabel.textColor = .red
+//        }
+
     }
     
-    
-    func didReceiveNewMessage(data: ChatsData, chatId: Int) {
-        
-    }
     func didReceiveStartTypingEvent(data: [String : Any]) {
         
     }
@@ -624,24 +634,24 @@ extension CallManager :SocketDelegate{
         #if targetEnvironment(simulator)
         // we're on the simulator - calculate pretend movement
         #else
-        //        ATCallManager.shared.provider?.invalidate() //////////////////////////
+        ATCallManager.shared.provider?.invalidate()
+        //        ATCallManager.shared.provider?.reportCall(with: <#T##UUID#>, endedAt: <#T##Date?#>, reason: <#T##CXCallEndedReason#>)
         #endif
-        let topVC = UIApplication.shared.topMostViewController()
-        if topVC is CallSetupController {
-            topVC?.dismissVC(completion: {
-                CallMinimiser.sharedInstance.hideCallBar()
-                self.stopWebrtc()
-            })
+        if  UIApplication.shared.topMostViewController() is CallViewController {
+            callscreen.dismissVC(completion: nil)
         }
+        CallMinimiser.sharedInstance.hideCallBar()
+        stopWebrtc()
+        
     }
     
     func didReceiveOffer(data: SignalingMessage) {
         print("-----------------------offer received---------------\(data)--------------------")
         let offersdp = RTCSessionDescription(type: .offer, sdp: (data.offer?.sdp)!)
         WebRTCClient.sharedInstance.receiveOffer(offerSDP: offersdp)
-        //        callscreen.calltimerlabel.text = ""
+//        callscreen.calltimerlabel.text = ""
         self.incomingCallUserId = data.connectedUserId ?? 0
-        self.callIdGlobal =  ""
+        self.callIdGlobal = data.callId ?? ""
         RTCAudioSession.sharedInstance().useManualAudio = true
         self.isVideoEnabled = data.isVideo ?? false
         self.connectedUserName = data.name!
@@ -664,16 +674,15 @@ extension CallManager :SocketDelegate{
     }
     
     func didReceiveReadyforcall(data: Available) {
-        print("----------------\(data)----------------")
-        callscreen.lblTimer.text = "Ringing"
-        WebRTCClient.sharedInstance.connect(onSuccess: { (offerSDP: RTCSessionDescription) -> Void in
-            self.sendSDP(sessionDescription: offerSDP, conUID: (data.connectedUserId!),callId: "")
-        })
-        //        if (isHeadphonesConnected()) {
-        //            switchToEarPieceAudio()
-        //        } else {
-        switchToSpeakerAudio()
-        //        }
+        callscreen.calltimerlabel.text = "Ringing"
+        WebRTCClient.sharedInstance.connect { (RTCSessionDescription) in
+            self.sendSDP(sessionDescription: RTCSessionDescription, conUID: data.connectedUserId!, callId: "")
+        }
+        if (isHeadphonesConnected()) {
+            switchToEarPieceAudio()
+        } else {
+            switchToSpeakerAudio()
+        }
         playCallTone()
     }
     
@@ -682,22 +691,22 @@ extension CallManager :SocketDelegate{
         print("-----------------------didReceiveAnswer---------------\(data)--------------------")
         print(data.type)
         self.connectedUserId = data.connectedUserId ?? 0
-        self.callIdGlobal =  ""
-        //        Sound.stopAll()
+        self.callIdGlobal = data.callId ?? ""
+//        Sound.stopAll()
         self.stopAudioPlayer()
         WebRTCClient.sharedInstance.receiveAnswer(answerSDP: RTCSessionDescription(type: .answer, sdp: (data.offer?.sdp)!))
         #if targetEnvironment(simulator)
-        // we're on the simulator - calculate pretend movement
+            // we're on the simulator - calculate pretend movement
         #else
-        //            ATCallManager.shared.outgoingCall(from: data.name ?? "", connectAfter: 0, isVideo: data.isVideo ?? false)
+            ATCallManager.shared.outgoingCall(from: data.name ?? "", connectAfter: 0, isVideo: data.isVideo ?? false)
         #endif
-        
+
         
         
     }
     func didReceiveCandidate(data: SignalingMessage) {
         print("-----------------------didReceiveCandidate-------------------\(data)----------------")
-        //        print(data.type)
+//        print(data.type)
         
         let candidate = data.candidate!
         WebRTCClient.sharedInstance.receiveCandidate(candidate: RTCIceCandidate(sdp: candidate.sdp, sdpMLineIndex: candidate.sdpMLineIndex, sdpMid: candidate.sdpMid))
@@ -728,75 +737,99 @@ extension CallManager :WebRTCClientDelegate{
         switch iceConnectionState {
         case .checking:
             state = "connecting..."
-            callscreen.lblTimer.text = state
-            callscreen.lblTimer.text = state
+            callscreen.calltimerlabel.text = state
+
         case .closed:
             state = "closed"
-            callscreen.lblTimer.text = state
-            callscreen.lblTimer.text = state
+            callscreen.calltimerlabel.text = state
+
         case .completed:
             state = "completed"
-            //            callscreen.lblTimer.text = state
-            callscreen.lblTimer.text = state
+            callscreen.calltimerlabel.text = state
+
         case .connected:
             state = "connected"
             isCallConnected = true
-            //            callscreen.lblTimer.text = state
-            callscreen.lblTimer.text = state
+            callscreen.calltimerlabel.text = state
+
             self.stopAudioPlayer()
-            //            Sound.stopAll()
+//            Sound.stopAll()
             timer.invalidate() // just in case this button is tapped multiple times
             timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
             isAudioMute = false
-            callscreen.remoteVideoViewContainter.isHidden = false
-            callscreen.localVideoView.isHidden = false
-            callscreen.view.bringSubviewToFront(callscreen.remoteVideoViewContainter)
-            callscreen.view.bringSubviewToFront(callscreen.localVideoView)
-            
+            callscreen.endcallbtn.isHidden = false
+            callscreen.speakerBtn.isHidden = false
+            callscreen.mutecallbtn.isHidden = false
+//            callscreen.videoswitcBtn.isHidden = true
+            callscreen.optionsbtnView.isHidden = false
+            callscreen.callActionsStackView.isHidden = false
+            callscreen.minimiseBtn.isHidden = false
+
+            if self.isVideoEnabled {
+                callscreen.remoteVideoViewContainter.isHidden = false
+                callscreen.localVideoView.isHidden = false
+                callscreen.cameraSwitchBtn.isHidden = false
+
+                callscreen.view.bringSubviewToFront(callscreen.remoteVideoViewContainter)
+                callscreen.view.bringSubviewToFront(callscreen.localVideoView)
+                callscreen.view.bringSubviewToFront(callscreen.optionsbtnView)
+                callscreen.view.bringSubviewToFront(callscreen.callActionsStackView)
+                callscreen.view.bringSubviewToFront(callscreen.endcallbtn)
+                callscreen.view.bringSubviewToFront(callscreen.mutecallbtn)
+                callscreen.view.bringSubviewToFront(callscreen.speakerBtn)
+                callscreen.view.bringSubviewToFront(callscreen.cameraSwitchBtn)
+                callscreen.view.bringSubviewToFront(callscreen.minimiseBtn)
+            } else {
+                callscreen.cameraSwitchBtn.isHidden = true
+                callscreen.view.bringSubviewToFront(callscreen.optionsbtnView)
+                callscreen.view.bringSubviewToFront(callscreen.callActionsStackView)
+                callscreen.view.bringSubviewToFront(callscreen.endcallbtn)
+                callscreen.view.bringSubviewToFront(callscreen.mutecallbtn)
+                callscreen.view.bringSubviewToFront(callscreen.speakerBtn)
+                callscreen.view.bringSubviewToFront(callscreen.minimiseBtn)
+            }
             if (isHeadphonesConnected()) {
                 if self.isVideoEnabled {
                     switchToEarPieceAudio()
                     switchToSpeakerAudio()
-                }else
-                {
+                } else {
                     switchToSpeakerAudio()
                     switchToEarPieceAudio()
                 }
-            }else
-            {
+            } else {
                 switchToEarPieceAudio()
                 switchToSpeakerAudio()
             }
-            
         case .count:
             state = "count..."
         case .disconnected:
             state = "disconnected"
-            callscreen.lblTimer.text = "reconnecting..."
+            callscreen.calltimerlabel.text = "reconnecting..."
             timer.invalidate()
-            //            startReachibility()
-            
+//            startReachibility()
+
         case .failed:
             state = "failed"
-            callscreen.lblTimer.text = state
+            callscreen.calltimerlabel.text = state
             if(isIncomingCall){
                 endCallLogic()
             }else{
-                //                ATCallManager.shared.provider?.invalidate() ////////////////////////
-                callscreen.dismiss(animated: true) {
+                ATCallManager.shared.provider?.invalidate()
+                if  UIApplication.shared.topMostViewController() is CallViewController {
+                    callscreen.dismissVC(completion: nil)
                 }
                 CallMinimiser.sharedInstance.hideCallBar()
                 stopWebrtc()
-                
+
             }
-            
+
         case .new:
             state = "new..."
         }
         print("WEBRTC STATE = \(state)")
-        //        if showHelpingLabel {
-        //            self.webRTCStatusLabel.text = self.webRTCStatusMesasgeBase + state
-        //        }
+//        if showHelpingLabel {
+//            self.webRTCStatusLabel.text = self.webRTCStatusMesasgeBase + state
+//        }
         
     }
     
@@ -804,7 +837,7 @@ extension CallManager :WebRTCClientDelegate{
         print("----------------------------")
         print("didConnectWebRTC")
         
-        
+
     }
     
     func didDisconnectWebRTC() {
@@ -817,9 +850,9 @@ extension CallManager :WebRTCClientDelegate{
     }
     
     func didReceiveData(data: Data) {
-        //        if data == likeStr.data(using: String.Encoding.utf8) {
-        //            self.startLikeAnimation()
-        //        }
+//        if data == likeStr.data(using: String.Encoding.utf8) {
+//            self.startLikeAnimation()
+//        }
     }
     
     func didReceiveMessage(message: String) {

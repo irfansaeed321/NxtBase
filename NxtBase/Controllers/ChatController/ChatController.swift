@@ -35,6 +35,7 @@ class ChatController: UIViewController {
     
     @IBAction func signOut(_ sender: UIButton) {
         DispatchQueue.main.asyncAfter(deadline: .now()+1) {
+            UserDefaults.standard.set(false, forKey: "isLogin")
             SocketIOManager.sharedInstance.closeConnection()
             self.appDelegate.moveToLogin()
         }
@@ -72,6 +73,7 @@ extension ChatController: UITableViewDelegate, UITableViewDataSource {
 }
 
 extension ChatController: SocketDelegate {
+    
     func didReceiveOffer(data: SignalingMessage) {
         
     }
@@ -132,21 +134,20 @@ extension ChatController: SocketDelegate {
         print("Active status \(data)")
         let dictionary : [String : Any] = data.first as! [String : Any]
         guard let user_id =  dictionary["user_id"] as? Int else {return}
-        if dataArray.count != 0 {
-            for item in dataArray {
-                if item.user_id == user_id {
-                    break
-                } else {
-                    let obj = OnlineUsersObject(fromDictionary: dictionary)
-                    dataArray.insert(obj, at: 0)
-                    tableView.reloadData()
-                }
-            }
-        } else {
+//        if dataArray.count != 0 {
+//            for item in dataArray {
+//                if item.user_id == user_id {
+//                    break
+//                } else {
+//                    let obj = OnlineUsersObject(fromDictionary: dictionary)
+//                    dataArray.insert(obj, at: 0)
+//                    tableView.reloadData()
+//                }
+//            }
+//        } else {
             let obj = OnlineUsersObject(fromDictionary: dictionary)
             dataArray.insert(obj, at: 0)
             tableView.reloadData()
-        }
-        
+//        }
     }
 }

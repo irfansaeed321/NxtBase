@@ -66,11 +66,7 @@ class ConversationController: UIViewController {
     
     func initiateCall(isVideoEnabled:Bool) {
         if(WebRTCClient.sharedInstance.isConnected){return}
-        
         CallManager.sharedInstance.incomingCallUserId = receiver_id
-//        CallManager.sharedInstance.connectedUserName = receivedchat.firstname
-//        CallManager.sharedInstance.connectedUserPhoto = receivedchat.profileImage
-        
         RTCAudioSession.sharedInstance().useManualAudio = true
         CallManager.sharedInstance.isIncomingCall = false
         CallManager.sharedInstance.isVideoEnabled = isVideoEnabled

@@ -10,7 +10,7 @@ import UIKit
 import CallKit
 import AVFoundation
 import WebRTC
-/*
+
 class ATCallManager: NSObject {
     
     static let shared: ATCallManager = ATCallManager()
@@ -169,4 +169,4 @@ extension ATCallManager: CXProviderDelegate {
         RTCAudioSession.sharedInstance().isAudioEnabled = false
     }
 }
-*/
+

@@ -55,6 +55,7 @@
 		04ED2F3524387F81000C6590 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04ED2F3324387F81000C6590 /* Main.storyboard */; };
 		04ED2F3724387F82000C6590 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04ED2F3624387F82000C6590 /* Assets.xcassets */; };
 		04ED2F3A24387F82000C6590 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04ED2F3824387F82000C6590 /* LaunchScreen.storyboard */; };
+		04FE48392458C56F00C7E013 /* CallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FE48382458C56F00C7E013 /* CallViewController.swift */; };
 		D54F9C6E3CCAB3D477386AA7 /* Pods_NxtBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6273625D5E6F93EE732121BB /* Pods_NxtBase.framework */; };
 /* End PBXBuildFile section */
 
@@ -125,6 +126,7 @@
 		04ED2F3624387F82000C6590 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		04ED2F3924387F82000C6590 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		04ED2F3B24387F82000C6590 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		04FE48382458C56F00C7E013 /* CallViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallViewController.swift; sourceTree = "<group>"; };
 		6273625D5E6F93EE732121BB /* Pods_NxtBase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NxtBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C45CA75A9C7A76FF0C4C1EC /* Pods-NxtBase.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NxtBase.release.xcconfig"; path = "Target Support Files/Pods-NxtBase/Pods-NxtBase.release.xcconfig"; sourceTree = "<group>"; };
 		D6750946FC91374BDDE97D7F /* Pods-NxtBase.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NxtBase.debug.xcconfig"; path = "Target Support Files/Pods-NxtBase/Pods-NxtBase.debug.xcconfig"; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 		0465B3B324387FAB009A41B1 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				04FE48352458C50A00C7E013 /* CallViewController */,
 				047C4FC024431D3F005730A4 /* CallSetupController */,
 				04B1C8142438EB3A00B998F1 /* ConversationController */,
 				04894BA524389F3200CEC8F7 /* ChatController */,
@@ -472,6 +475,14 @@
 			path = NxtBase;
 			sourceTree = "<group>";
 		};
+		04FE48352458C50A00C7E013 /* CallViewController */ = {
+			isa = PBXGroup;
+			children = (
+				04FE48382458C56F00C7E013 /* CallViewController.swift */,
+			);
+			path = CallViewController;
+			sourceTree = "<group>";
+		};
 		3AAAEE0090C7B122C807241A /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -649,6 +660,7 @@
 				04894BA224389CD300CEC8F7 /* SignInData.swift in Sources */,
 				04894B96243894EE00CEC8F7 /* SignUpData.swift in Sources */,
 				04894BB32438B7DD00CEC8F7 /* SocketModel.swift in Sources */,
+				04FE48392458C56F00C7E013 /* CallViewController.swift in Sources */,
 				04B1C8132438DC3E00B998F1 /* View.swift in Sources */,
 				04894B9B2438957F00CEC8F7 /* NetworkHandler.swift in Sources */,
 			);

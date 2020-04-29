@@ -12,6 +12,7 @@ import AVFoundation
 @objc protocol CameraSessionDelegate {
     func didOutput(_ sampleBuffer: CMSampleBuffer)
 }
+
 class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     private var session: AVCaptureSession?

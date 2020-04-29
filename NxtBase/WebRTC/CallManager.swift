@@ -71,7 +71,7 @@ class CallManager:NSObject  {
         callscreen.modalPresentationStyle = .overFullScreen
     }
     deinit {
-//        reachability.stopNotifier()
+
     }
 
     func minimiserCall()  {
@@ -88,9 +88,6 @@ class CallManager:NSObject  {
             callscreen = storyboard.instantiateViewController(withIdentifier: CallViewController.className) as! CallViewController
             callscreen.modalPresentationStyle = .overFullScreen
         }
-//        if let tabController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController {
-//            tabController.presentVC(callscreen)
-//        }
         callscreen.setupCallAgain()
     }
 
@@ -255,20 +252,13 @@ class CallManager:NSObject  {
     }
 
     func isHeadphonesConnected() -> Bool{
-        //        let routes = AVAudioSession.sharedInstance().currentRoute
-        //        return routes.outputs.contains(where: { (port) -> Bool in
-        //            port.portType == AVAudioSession.Port.headphones
-        //        })
-        
         if UIDevice.current.userInterfaceIdiom == .pad {
             return false; /* Device is iPad */
-        }
-        else
-        {
+        } else {
             return true
         }
-        
     }
+    
     public func switchToEarPieceAudio(){
         
         let sharedSession = AVAudioSession.sharedInstance()
@@ -291,17 +281,6 @@ class CallManager:NSObject  {
         
     }
     public func switchToSpeakerAudio() {
-//        let sharedSession = AVAudioSession.sharedInstance()
-//           do {
-//            try sharedSession.setCategory(AVAudioSession.Category.playAndRecord)
-//            try sharedSession.setMode(AVAudioSession.Mode.voiceChat)
-//               try sharedSession.setPreferredIOBufferDuration(TimeInterval(0.005))
-//               try sharedSession.setPreferredSampleRate(44100.0)
-//           } catch {
-//               debugPrint("Failed to configure `AVAudioSession`")
-//           }
-//
-        
         let sharedSession = AVAudioSession.sharedInstance()
         do {
             try sharedSession.setCategory(AVAudioSession.Category.playAndRecord,options: [ .allowBluetooth, .allowBluetoothA2DP])
@@ -319,18 +298,13 @@ class CallManager:NSObject  {
         } catch let error as NSError {
             print("audioSession error: \(error.localizedDescription)")
         }
-        
     }
+    
     func initiateCallLogic(){
         if !WebRTCClient.sharedInstance.isConnected {
             self.sendNewCallEvent()
             callscreen.calltimerlabel.text = "Calling"
-            //            callcounter = 0
-            //            calltimer.invalidate() // just in case this button is tapped multiple times
-            //            calltimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(calltimerAction), userInfo: nil, repeats: true)
-            
         }
-        
     }
     
     func endCallLogic() {
@@ -559,23 +533,11 @@ extension CallManager :SocketDelegate{
             for candidate in self.iceArray!{
                 self.sendCandidate(iceCandidate: candidate, conUID: self.connectedUserId)
             }
-
-            
-//            WebRTCClient.sharedInstance.connect(reconnect: true ,onSuccess: { (offerSDP: RTCSessionDescription) -> Void in
-//                self.sendSDP(sessionDescription: offerSDP, conUID: (self.connectedUserId),callId: self.callIdGlobal)
-//            })
-            
-
-            
         }
     }
     
     func didSocketDisConnected(data: [Any]) {
         print("-- websocket did disconnect --")
-//        if(showHelpingLabel){
-//            wsStatusLabel.text = wsStatusMessageBase + "disconnected"
-//            wsStatusLabel.textColor = .red
-//        }
 
     }
     
@@ -689,12 +651,12 @@ extension CallManager :SocketDelegate{
         WebRTCClient.sharedInstance.connect { (RTCSessionDescription) in
             self.sendSDP(sessionDescription: RTCSessionDescription, conUID: data.connectedUserId!, callId: "")
         }
-        switchToSpeakerAudio()
-//        if (isHeadphonesConnected()) {
-//            switchToEarPieceAudio()
-//        } else {
-//            switchToSpeakerAudio()
-//        }
+//        switchToSpeakerAudio()
+        if (isHeadphonesConnected()) {
+            switchToEarPieceAudio()
+        } else {
+            switchToSpeakerAudio()
+        }
         playCallTone()
     }
     
@@ -802,14 +764,14 @@ extension CallManager :WebRTCClientDelegate{
             }
             if (isHeadphonesConnected()) {
                 if self.isVideoEnabled {
-//                    switchToEarPieceAudio()
+                    switchToEarPieceAudio()
                     switchToSpeakerAudio()
                 } else {
                     switchToSpeakerAudio()
-//                    switchToEarPieceAudio()
+                    switchToEarPieceAudio()
                 }
             } else {
-//                switchToEarPieceAudio()
+                switchToEarPieceAudio()
                 switchToSpeakerAudio()
             }
         case .count:

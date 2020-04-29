@@ -174,8 +174,6 @@ class CallViewController: UIViewController {
             view.bringSubviewToFront(mutecallbtn)
             view.bringSubviewToFront(speakerBtn)
             view.bringSubviewToFront(minimiseBtn)
-            //                self.view.bringSubviewToFront(self.videoswitcBtn)
-            
         }
     }
     
@@ -186,13 +184,12 @@ class CallViewController: UIViewController {
         print("id = \(CallManager.sharedInstance.connectedUserId)")
         if(CallManager.sharedInstance.isVideoEnabled){
             addVideoViews()
-            self.calltypelabel.text = "KalamTime video call"
+            self.calltypelabel.text = "Nxt Base Video Call"
         }else{
-            self.calltypelabel.text = "KalamTime audio call"
+            self.calltypelabel.text = "Nxt Base Audio Call"
         }
         calltimerlabel.text = ""
         self.callername.text = CallManager.sharedInstance.connectedUserName
-//        self.callerImage.setImage(url: URL(string: CallManager.sharedInstance.connectedUserPhoto ))
         
         if CallManager.sharedInstance.isIncomingCall {
             

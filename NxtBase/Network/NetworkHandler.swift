@@ -40,13 +40,10 @@ class NetworkHandler {
                 
                 guard let statusCode = response.response?.statusCode else {
                     var networkError = NetworkError()
-                    
                     networkError.status = Constants.NetworkError.timout
                     networkError.message = Constants.NetworkError.timoutError
-                    
                     failure(networkError)
                     return
-                    
                 }
                 
                 if statusCode == 422 {

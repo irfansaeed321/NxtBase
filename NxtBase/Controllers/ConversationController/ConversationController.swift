@@ -68,6 +68,7 @@ class ConversationController: UIViewController {
         if(WebRTCClient.sharedInstance.isConnected){return}
         CallManager.sharedInstance.incomingCallUserId = receiver_id
         RTCAudioSession.sharedInstance().useManualAudio = true
+        RTCAudioSession.sharedInstance().isAudioEnabled = true
         CallManager.sharedInstance.isIncomingCall = false
         CallManager.sharedInstance.isVideoEnabled = isVideoEnabled
         CallManager.sharedInstance.startWebrtc()

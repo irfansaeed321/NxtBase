@@ -130,7 +130,7 @@ class SocketIOManager: NSObject {
             let offerDic = dictionary["offer"] as! [String:Any]
             let sdp = SDP.init(sdp: offerDic["sdp"] as! String)
             print(sdp)
-            let signalingMessage = SignalingMessage.init(type: dictionary["type"] as! String, offer: sdp, candidate: dictionary["candidate"] as? Candidate, phone: dictionary["phone"] as? String, photoUrl: dictionary["photoUrl"] as? String, name: dictionary["name"] as? String, connectedUserId: dictionary["connectedUserId"] as? Int, isVideo: dictionary["isVideo"] as? Bool,callId: "")
+            let signalingMessage = SignalingMessage.init(type: dictionary["type"] as! String, offer: sdp, candidate: dictionary["candidate"] as? Candidate, phone: dictionary["phone"] as? String, photoUrl: dictionary["photoUrl"] as? String, name: dictionary["name"] as? String, connectedUserId: dictionary["connectedUserId"] as? Int, isVideo: true ,callId: "")
             
             if(CallManager.sharedInstance.isCallHandled == false) {
                 #if targetEnvironment(simulator)

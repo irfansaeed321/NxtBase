@@ -14,17 +14,10 @@ import CallKit
 
 class CallViewController: UIViewController {
     
-    //MARK: - Iboutlets
-    
+    //MARK: - IBoutlets
     @IBOutlet weak var callActionsStackView: UIStackView!
     @IBOutlet weak var minimiseBtn: UIButton!
     @IBOutlet weak var optionsbtnView: UIView!
-//    @IBOutlet weak var cancelBtn: UIButton!
-//    @IBOutlet weak var callagainBtn: UIButton!
-//    @IBOutlet weak var callbtn: UIButton!
-//    @IBOutlet weak var speakercallbtn: UIButton!
-//    @IBOutlet weak var msgcallbtn: UIButton!
-//    @IBOutlet weak var holdcallbtn: UIButton!
     @IBOutlet weak var mutecallbtn: UIButton!
     @IBOutlet weak var endcallbtn: UIButton!
     @IBOutlet weak var acceptcallbtn: UIButton!
@@ -33,7 +26,7 @@ class CallViewController: UIViewController {
             callerImage.circularView()
         }
     }
-//    @IBOutlet weak var videoswitcBtn: UIButton!
+    //    @IBOutlet weak var videoswitcBtn: UIButton!
     @IBOutlet weak var calltypelabel: UILabel!
     @IBOutlet weak var calltimerlabel: UILabel!
     @IBOutlet weak var callername: UILabel!
@@ -72,6 +65,7 @@ class CallViewController: UIViewController {
         CallManager.sharedInstance.toggleSpeaker()
     }
     @IBAction func acceptcalltapped(_ sender: Any) {
+        RTCAudioSession.sharedInstance().isAudioEnabled = true
         CallManager.sharedInstance.acceptCalllogic()
     }
     @IBAction func endcallTapped(_ sender: Any) {
@@ -81,11 +75,11 @@ class CallViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-    
+        
     }
-   
+    
     override func viewDidDisappear(_ animated: Bool) {
-  
+        
     }
     
     override func didReceiveMemoryWarning() {
@@ -108,14 +102,13 @@ class CallViewController: UIViewController {
         WebRTCClient.sharedInstance.setupLocalViewFrame(frame: CGRect(x: 0, y: 0, width: ScreenSizeUtil.width()/4, height: ScreenSizeUtil.height()/6))
         localVideoView.frame.origin.y = 20
         localVideoView.frame.origin.x = ScreenSizeUtil.width() - localVideoView.frame.size.width
-        //            localVideoView.frame.origin.x = 0
         localVideoView.subviews.last?.isUserInteractionEnabled = true
         self.view.addSubview(localVideoView)
         localVideoView.isHidden = true
         
         let localVideoViewButton = UIButton(frame: CGRect(x: 0, y: 0, width: localVideoView.frame.width, height: localVideoView.frame.height))
         localVideoViewButton.backgroundColor = UIColor.clear
-        //            localVideoViewButton.addTarget(self, action: #selector(self.localVideoViewTapped(_:)), for: .touchUpInside)
+
         localVideoView.addDraggability(withinView: self.view)
         localVideoView.addSubview(localVideoViewButton)
         
@@ -129,7 +122,6 @@ class CallViewController: UIViewController {
         speakerBtn.isHidden = false
         minimiseBtn.isHidden = false
         mutecallbtn.isHidden = false
-//        videoswitcBtn.isHidden = true
         optionsbtnView.isHidden = false
         callActionsStackView.isHidden = false
         
@@ -178,10 +170,6 @@ class CallViewController: UIViewController {
     }
     
     func setupUI(){
-        
-        print("name = \(CallManager.sharedInstance.connectedUserName)")
-        print("photo = \(CallManager.sharedInstance.connectedUserPhoto)")
-        print("id = \(CallManager.sharedInstance.connectedUserId)")
         if(CallManager.sharedInstance.isVideoEnabled){
             addVideoViews()
             self.calltypelabel.text = "Nxt Base Video Call"
@@ -197,34 +185,23 @@ class CallViewController: UIViewController {
             self.acceptcallbtn.isHidden = false
             self.endcallbtn.isHidden = false
             
-//            self.cancelBtn.isHidden = true
-//            self.callagainBtn.isHidden = true
-            
             self.mutecallbtn.isHidden = true
             self.speakerBtn.isHidden  = true
             self.cameraSwitchBtn.isHidden    = true
             
             self.optionsbtnView.isHidden = true
-//            self.videoswitcBtn.isHidden = true
             self.minimiseBtn.isHidden = true
-            
-            
-            
-        }else{
+        } else {
             //outgoing call
             CallManager.sharedInstance.initiateCallLogic()
             self.acceptcallbtn.isHidden = true
             self.endcallbtn.isHidden = false
-//            self.endcallbtn.center.x = self.view.center.x
-//            self.cancelBtn.isHidden = true
-//            self.callagainBtn.isHidden = true
+            
             self.mutecallbtn.isHidden   = true
             self.speakerBtn.isHidden    = true
             self.cameraSwitchBtn.isHidden      = true
             self.optionsbtnView.isHidden = true
-//            self.videoswitcBtn.isHidden = true
             self.minimiseBtn.isHidden = true
-            
         }
     }
 }

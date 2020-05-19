@@ -425,14 +425,9 @@ class CallManager:NSObject  {
     }
     
     func showCallScreen() {
-//        if let tabController = UIApplication.shared.keyWindow?.rootViewController as? UITabBarController {
-//            tabController.presentVC(callscreen)
-//        }
-        
          callscreen = storyboard.instantiateViewController(withIdentifier: CallViewController.className) as! CallViewController
                callscreen.modalPresentationStyle = .overFullScreen
         UIApplication.shared.keyWindow?.rootViewController?.presentVC(callscreen)
-        
         callscreen.setupUI()
     }
     
@@ -450,7 +445,7 @@ class CallManager:NSObject  {
     }
     
     // MARK: - WebRTC Signaling
-    private func sendSDP(sessionDescription: RTCSessionDescription,conUID:Int,callId:String){
+    private func sendSDP(sessionDescription: RTCSessionDescription, conUID:Int, callId:String){
         var type = ""
         if sessionDescription.type == .offer {
             type = "offer"
@@ -460,6 +455,7 @@ class CallManager:NSObject  {
         }
         
         let sdp = SDP.init(sdp: sessionDescription.sdp)
+        
         let signalingMessage = SignalingMessage.init(type: type, offer: sdp, candidate: nil,phone: "",photoUrl:"",name: "",connectedUserId: conUID,isVideo: isVideoEnabled,callId: callId)
         do {
             let data = try JSONEncoder().encode(signalingMessage)
@@ -471,7 +467,6 @@ class CallManager:NSObject  {
     }
     
     private func sendCandidate(iceCandidate: RTCIceCandidate,conUID:Int){
-        
         let candidate = Candidate.init(sdp: iceCandidate.sdp, sdpMLineIndex: iceCandidate.sdpMLineIndex, sdpMid: iceCandidate.sdpMid!)
         let signalingMessage = SignalingMessage.init(type: "candidate", offer: nil, candidate: candidate,phone: "",photoUrl:"",name: "",connectedUserId: conUID,isVideo: isVideoEnabled,callId: "")
         
